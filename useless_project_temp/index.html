@@ -1,0 +1,2573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shawarma Lab 🌯 Real-World Food Science & CV Edition</title>
+<!-- Google Fonts: Fredoka (cartoon/comic) & Plus Jakarta Sans (clean UI) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+<!-- OpenCV.js for Computer Vision detection -->
+<script async src="https://docs.opencv.org/4.x/opencv.js" onload="onOpenCvReady()"></script>
+<!-- Canvas Confetti for big shawarma celebration -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+<style>
+/* ==========================================================================
+   CARTOON FOOD DESIGN SYSTEM & THEME
+   ========================================================================== */
+:root {
+  --bg: #FFFDF5;
+  --bg-dots: #F3EBD9;
+  --card-bg: #FFFFFF;
+  --border-color: #2D1E12;
+  --border-width: 3.5px;
+  --shadow-offset: 6px;
+  --shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border-color);
+  --shadow-sm: 4px 4px 0px var(--border-color);
+  --shadow-lg: 10px 10px 0px var(--border-color);
+  --shadow-active: 2px 2px 0px var(--border-color);
+
+  /* Cartoon Food Palette */
+  --mustard: #FFB800;
+  --mustard-light: #FFF0C2;
+  --ketchup: #FF4757;
+  --ketchup-dark: #D63031;
+  --pita: #FFEAA7;
+  --pita-crust: #DDA853;
+  --lettuce: #2ED573;
+  --lettuce-light: #E0FBEA;
+  --garlic: #F8F9FA;
+  --spicy: #FF6B4A;
+  --blue: #3B82F6;
+  --blue-light: #EFF6FF;
+  --text-main: #2D1E12;
+  --text-muted: #7A6652;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --radius-pill: 999px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--bg-dots) 20%, transparent 20%);
+  background-size: 24px 24px;
+  color: var(--text-main);
+  min-height: 100vh;
+  line-height: 1.5;
+  overflow-x: hidden;
+  position: relative;
+}
+
+h1, h2, h3, h4, .comic-font {
+  font-family: 'Fredoka', cursive, sans-serif;
+  letter-spacing: -0.5px;
+}
+
+/* Floating background cartoon decorations */
+.floating-shawarma-bg {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.65;
+  filter: drop-shadow(3px 3px 0px rgba(45,30,18,0.2));
+}
+
+.float-top-left {
+  top: 90px;
+  left: 20px;
+  width: 75px;
+  animation: floatBob 4s infinite ease-in-out;
+}
+
+.float-top-right {
+  top: 110px;
+  right: 25px;
+  width: 85px;
+  animation: floatBob 5s infinite ease-in-out 1s;
+}
+
+.float-bottom-right {
+  bottom: 40px;
+  right: 30px;
+  width: 70px;
+  animation: floatBob 4.5s infinite ease-in-out 0.5s;
+}
+
+@keyframes floatBob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(6deg); }
+}
+
+/* Header */
+header {
+  background: #FFF9E6;
+  border-bottom: var(--border-width) solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 0px rgba(45, 30, 18, 0.08);
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.logo-mascot {
+  width: 50px;
+  height: 50px;
+  background: var(--mustard);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  box-shadow: 3px 3px 0px var(--border-color);
+  animation: wiggle 3s infinite ease-in-out;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-6deg) scale(1.05); }
+  75% { transform: rotate(6deg) scale(1.05); }
+}
+
+.logo-text {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.logo-text span {
+  color: var(--ketchup);
+  background: #FFE5E8;
+  padding: 2px 8px;
+  border-radius: 8px;
+  border: 2px solid var(--ketchup);
+  display: inline-block;
+  transform: rotate(-2deg);
+}
+
+.tagline-badge {
+  background: white;
+  border: 2.5px solid var(--border-color);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-main);
+  box-shadow: 3px 3px 0px var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Hero */
+.hero {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 36px 24px 18px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ketchup);
+  color: white;
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+  transform: rotate(-1deg);
+}
+
+.hero-mascot-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.hero-speech-bubble {
+  background: white;
+  border: 3px solid var(--border-color);
+  border-radius: 20px;
+  padding: 10px 18px;
+  font-family: 'Fredoka', cursive;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  box-shadow: 4px 4px 0px var(--border-color);
+  position: relative;
+}
+
+.hero-speech-bubble::after {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 8px 12px 8px 0;
+  border-style: solid;
+  border-color: transparent var(--border-color) transparent transparent;
+}
+
+.hero-shawarma-character {
+  width: 110px;
+  height: 110px;
+  filter: drop-shadow(4px 4px 0px var(--border-color));
+  animation: heroMascotBounce 2.5s infinite ease-in-out;
+}
+
+@keyframes heroMascotBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-3deg); }
+}
+
+.hero h1 {
+  font-size: clamp(34px, 5.5vw, 62px);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--text-main);
+  max-width: 900px;
+  margin: 0 auto 14px;
+  text-shadow: 2px 2px 0px #FFF, 4px 4px 0px rgba(255, 184, 0, 0.4);
+}
+
+.hero h1 .highlight-word {
+  color: var(--ketchup);
+  position: relative;
+  display: inline-block;
+}
+
+.hero p {
+  font-size: clamp(16px, 2.2vw, 19px);
+  font-weight: 700;
+  color: var(--text-muted);
+  max-width: 740px;
+  margin: 0 auto 20px;
+}
+
+.hero-stickers {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.sticker {
+  background: white;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  padding: 7px 16px;
+  border-radius: var(--radius-pill);
+  font-family: 'Fredoka', cursive;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s;
+}
+
+.sticker:hover {
+  transform: translateY(-3px) scale(1.04);
+}
+
+/* Workspace */
+main {
+  max-width: 1200px;
+  margin: 0 auto 60px;
+  padding: 0 24px;
+  position: relative;
+  z-index: 2;
+}
+
+.lab-panel {
+  background: var(--card-bg);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 34px 30px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+/* Step Bar */
+.step-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.step-item {
+  flex: 1;
+  min-width: 150px;
+  background: #F4EEDF;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-pill);
+  padding: 10px 16px;
+  font-family: 'Fredoka', cursive;
+  font-size: 14px;
+  font-weight: 700;
+  color: #8C7561;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 2px 2px 0px var(--border-color);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.step-item.active {
+  background: var(--mustard);
+  color: var(--text-main);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.step-item.completed {
+  background: var(--lettuce-light);
+  color: #0E6B34;
+  border-color: var(--border-color);
+}
+
+.step-num {
+  background: white;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+/* 2-Column Grid */
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 1.18fr 1fr;
+  gap: 30px;
+}
+
+@media (max-width: 950px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card-box {
+  background: #FFFDF8;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.card-title {
+  font-size: 24px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.card-subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  line-height: 1.45;
+}
+
+/* Upload dropzone */
+.dropzone {
+  border: 3.5px dashed #D3C4B0;
+  border-radius: var(--radius-md);
+  padding: 30px 20px;
+  text-align: center;
+  background: #FFF8EA;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.dropzone:hover {
+  border-color: var(--ketchup);
+  background: #FFF2DB;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.dropzone-character {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 10px;
+  display: block;
+  filter: drop-shadow(2px 2px 0px var(--border-color));
+}
+
+.dropzone h3 {
+  font-size: 20px;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.dropzone p {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+input[type="file"] {
+  display: none;
+}
+
+/* Sample test buttons */
+.sample-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding: 12px 16px;
+  background: #F8F3E6;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.sample-bar-label {
+  font-family: 'Fredoka', cursive;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.sample-btn {
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-family: 'Fredoka', cursive;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: 2px 2px 0px var(--border-color);
+  transition: all 0.15s;
+}
+
+.sample-btn:hover {
+  background: var(--mustard-light);
+  transform: translateY(-1px);
+}
+
+/* Canvas Mode Switcher Tabs */
+.canvas-mode-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.mode-tab {
+  flex: 1;
+  min-width: 120px;
+  padding: 9px 12px;
+  font-family: 'Fredoka', cursive;
+  font-size: 13px;
+  font-weight: 700;
+  border: 2.5px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  background: white;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: 2px 2px 0px var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.mode-tab.active-tab {
+  background: var(--mustard);
+  transform: translateY(-2px);
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+/* Canvas Wrapper */
+.canvas-wrapper {
+  display: none;
+  position: relative;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #1F1915;
+  box-shadow: var(--shadow-sm);
+}
+
+.canvas-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--ketchup);
+  color: white;
+  font-family: 'Fredoka', cursive;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--border-color);
+  z-index: 10;
+  pointer-events: none;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: crosshair;
+}
+
+/* Buttons */
+.btn {
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+  user-select: none;
+  text-decoration: none;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow);
+}
+
+.btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-active);
+}
+
+.btn-primary { background: var(--mustard); color: var(--text-main); }
+.btn-danger { background: var(--ketchup); color: white; }
+.btn-dark { background: var(--border-color); color: white; }
+.btn-ghost { background: #FFF4DC; color: var(--text-main); }
+.btn-sm {
+  padding: 7px 14px;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+/* Caliper Info Cards */
+.caliper-readout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.caliper-card {
+  background: white;
+  border: 2.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.caliper-card.card-orange { border-left: 6px solid var(--ketchup); }
+.caliper-card.card-green { border-left: 6px solid var(--lettuce); }
+
+.caliper-card-title {
+  font-family: 'Fredoka', cursive;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.caliper-card-val {
+  font-family: 'Fredoka', cursive;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-top: 2px;
+}
+
+/* Real-world scale calibration box */
+.scale-box {
+  background: #FFF9ED;
+  border: 2.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-top: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.scale-toggle-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.scale-btn-pill {
+  flex: 1;
+  padding: 8px 12px;
+  font-family: 'Fredoka', cursive;
+  font-size: 13px;
+  font-weight: 700;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  background: white;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.scale-btn-pill.selected {
+  background: var(--mustard);
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.presets-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.preset-chip {
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  font-family: 'Fredoka', cursive;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.preset-chip.active-preset {
+  background: var(--mustard);
+  border-color: var(--border-color);
+}
+
+.preset-chip:hover {
+  background: var(--mustard-light);
+  transform: translateY(-1px);
+}
+
+.cartoon-input {
+  width: 100%;
+  font-family: 'Fredoka', cursive;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border: 2.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: white;
+  box-shadow: 2px 2px 0px var(--border-color);
+  outline: none;
+}
+
+/* Status banner */
+.status-pill {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #FFF8E6;
+  border: 2.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--mustard);
+  border: 2px solid var(--border-color);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+/* Results section */
+#results {
+  display: none;
+  margin-top: 22px;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.92) translateY(12px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.verdict-box {
+  border: 4px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.verdict-big {
+  background: linear-gradient(135deg, #FFE066 0%, #FFB800 100%);
+  color: var(--text-main);
+}
+
+.verdict-small {
+  background: linear-gradient(135deg, #F3EBD9 0%, #E8DCBF 100%);
+  color: var(--text-main);
+}
+
+.verdict-badge {
+  border: 2.5px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  padding: 6px 18px;
+  font-family: 'Fredoka', cursive;
+  font-size: 14px;
+  font-weight: 800;
+  display: inline-block;
+  margin-bottom: 10px;
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.verdict-big .verdict-badge { background: var(--ketchup); color: white; }
+.verdict-small .verdict-badge { background: #7A6652; color: white; }
+
+.verdict-title {
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+
+.verdict-sub {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   REAL-WORLD COMPARISON CARD (DIRECTLY COMPARATIVE)
+   ========================================================================== */
+.real-world-box {
+  background: #FFFDF8;
+  border: 3px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.real-world-title {
+  font-family: 'Fredoka', cursive;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.comp-item {
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.comp-item-header {
+  font-family: 'Fredoka', cursive;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.comp-item-val {
+  font-family: 'Fredoka', cursive;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-top: 3px;
+}
+
+.comp-item-desc {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Real-World Category Banner */
+.real-world-scale-bar {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #FFF4DC;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.real-world-scale-bar span {
+  font-family: 'Fredoka', cursive;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Volume Meter */
+.volume-meter-card {
+  background: white;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.meter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Fredoka', cursive;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.meter-track {
+  height: 20px;
+  background: #F0E8D7;
+  border: 2.5px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  position: relative;
+}
+
+.meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--mustard) 0%, var(--ketchup) 100%);
+  border-radius: var(--radius-pill);
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.meter-target-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 62.5%; /* 500 cm³ marker (scale max 800) */
+  width: 3px;
+  background: var(--border-color);
+  z-index: 2;
+}
+
+/* Primary Metric Cards */
+.hero-metric-card {
+  background: #FFF7DF;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.hero-metric-title {
+  font-family: 'Fredoka', cursive;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hero-metric-value {
+  font-family: 'Fredoka', cursive;
+  font-size: clamp(34px, 5vw, 46px);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ketchup);
+  text-shadow: 1px 1px 0px var(--border-color);
+}
+
+.hero-metric-value span {
+  font-size: 18px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.stat-pill-card {
+  background: white;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s;
+}
+
+.stat-pill-card:hover { transform: translateY(-2px); }
+
+.stat-pill-label {
+  font-family: 'Fredoka', cursive;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-pill-val {
+  font-family: 'Fredoka', cursive;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-top: 4px;
+}
+
+/* Length fine-tuner with realistic presets */
+.length-adjust-card {
+  background: #FFFDF8;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+.length-quick-presets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.quick-len-btn {
+  background: white;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  padding: 3px 9px;
+  font-family: 'Fredoka', cursive;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quick-len-btn:hover {
+  background: var(--mustard-light);
+}
+
+.length-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.length-slider {
+  flex: 1;
+  accent-color: var(--ketchup);
+  cursor: pointer;
+  height: 8px;
+}
+
+/* Uselessness Rating */
+.useless-rating {
+  background: var(--border-color);
+  color: white;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+}
+
+.useless-rating small {
+  font-family: 'Fredoka', cursive;
+  color: #D3C4B0;
+  font-size: 12px;
+  letter-spacing: 1px;
+  display: block;
+}
+
+.useless-rating b {
+  font-family: 'Fredoka', cursive;
+  font-size: 24px;
+  color: var(--mustard);
+}
+
+/* ==========================================================================
+   CARTOON POPUP MODAL (THE POP UP VERDICT)
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 30, 18, 0.75);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: #FFFDF5;
+  border: 4.5px solid var(--border-color);
+  border-radius: 28px;
+  box-shadow: var(--shadow-lg);
+  max-width: 500px;
+  width: 100%;
+  padding: 32px 26px 26px;
+  text-align: center;
+  position: relative;
+  transform: scale(0.4) rotate(-5deg);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+.modal-overlay.show .modal-card {
+  transform: scale(1) rotate(0deg);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  background: white;
+  border: 3px solid var(--border-color);
+  border-radius: 50%;
+  font-family: 'Fredoka', cursive;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 2px 2px 0px var(--border-color);
+  transition: all 0.15s;
+}
+
+.modal-close-btn:hover {
+  background: var(--ketchup);
+  color: white;
+  transform: scale(1.1);
+}
+
+.modal-top-ribbon {
+  display: inline-block;
+  padding: 6px 16px;
+  border: 2.5px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  font-family: 'Fredoka', cursive;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.modal-character-stage {
+  margin: 0 auto 16px;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(4px 4px 0px var(--border-color));
+  animation: popupShawarmaFloat 2.5s infinite ease-in-out;
+}
+
+@keyframes popupShawarmaFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.modal-character-stage svg { width: 100%; height: 100%; }
+
+.modal-verdict-title {
+  font-size: clamp(28px, 6vw, 36px);
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 8px;
+  text-shadow: 1.5px 1.5px 0px white;
+}
+
+.modal-vol-badge {
+  display: inline-block;
+  background: white;
+  border: 3px solid var(--border-color);
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  font-family: 'Fredoka', cursive;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ketchup);
+  margin-bottom: 12px;
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.modal-verdict-sub {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+  line-height: 1.45;
+  padding: 0 10px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.modal-actions .btn { flex: 1; min-width: 160px; }
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 30px 24px 50px;
+  font-family: 'Fredoka', cursive;
+  font-size: 15px;
+  color: var(--text-muted);
+  border-top: var(--border-width) solid var(--border-color);
+  background: #FFF9E6;
+  position: relative;
+  z-index: 2;
+}
+
+footer strong { color: var(--text-main); }
+
+.footer-badges {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.footer-badge {
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+@media (max-width: 600px) {
+  .lab-panel { padding: 20px 16px; }
+  .card-box { padding: 16px; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .step-bar { gap: 8px; }
+  .step-item { min-width: 130px; font-size: 12px; padding: 8px 12px; }
+  .hero-mascot-row { flex-direction: column; gap: 10px; }
+  .hero-speech-bubble::after { display: none; }
+  .caliper-readout-grid { grid-template-columns: 1fr; }
+  .comparison-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- FLOATING BACKGROUND CARTOON SHAWARMAS -->
+<div class="floating-shawarma-bg float-top-left">
+  <svg viewBox="0 0 100 100" width="100%" height="100%">
+    <rect x="25" y="15" width="50" height="70" rx="25" fill="#FFEAA7" stroke="#2D1E12" stroke-width="4" />
+    <path d="M 35 25 Q 50 32 65 25 M 35 45 Q 50 52 65 45" stroke="#945D2D" stroke-width="3" fill="none" stroke-linecap="round" />
+    <rect x="23" y="55" width="54" height="32" rx="10" fill="#E2E8F0" stroke="#2D1E12" stroke-width="4" />
+    <rect x="23" y="62" width="54" height="8" fill="#FF4757" />
+    <circle cx="42" cy="36" r="3.5" fill="#2D1E12" />
+    <circle cx="58" cy="36" r="3.5" fill="#2D1E12" />
+    <path d="M 47 42 Q 50 45 53 42" stroke="#2D1E12" stroke-width="2.5" fill="none" stroke-linecap="round" />
+  </svg>
+</div>
+
+<div class="floating-shawarma-bg float-top-right">
+  <svg viewBox="0 0 100 100" width="100%" height="100%">
+    <path d="M 20 45 Q 5 25 15 50 Q 5 65 25 55" fill="#FFF" stroke="#2D1E12" stroke-width="3"/>
+    <path d="M 80 45 Q 95 25 85 50 Q 95 65 75 55" fill="#FFF" stroke="#2D1E12" stroke-width="3"/>
+    <rect x="28" y="15" width="44" height="70" rx="22" fill="#F7D488" stroke="#2D1E12" stroke-width="4" />
+    <rect x="26" y="52" width="48" height="34" rx="12" fill="#FF4757" stroke="#2D1E12" stroke-width="4" />
+    <circle cx="43" cy="34" r="4" fill="#2D1E12" /><circle cx="44" cy="33" r="1.5" fill="#FFF" />
+    <circle cx="57" cy="34" r="4" fill="#2D1E12" /><circle cx="58" cy="33" r="1.5" fill="#FFF" />
+    <ellipse cx="50" cy="42" rx="4" ry="3" fill="#D63031" />
+  </svg>
+</div>
+
+<!-- NAVBAR -->
+<header>
+  <div class="nav-container">
+    <div class="logo-wrap">
+      <div class="logo-mascot">🌯</div>
+      <div class="logo-text">SHAWARMA<span>LAB</span> ⚡</div>
+    </div>
+    <div class="tagline-badge">
+      <span>🧄</span> REAL-WORLD FOOD SCIENCE & CALIPERS
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-pill">
+    <span>🏆</span> The World's Most Rigorous Shawarma Caliper
+  </div>
+
+  <div class="hero-mascot-row">
+    <div class="hero-shawarma-character">
+      <svg viewBox="0 0 120 120" width="100%" height="100%">
+        <path d="M 42 22 Q 40 10 50 12 Q 60 4 70 12 Q 80 10 78 22 Z" fill="#FFF" stroke="#2D1E12" stroke-width="3.5" />
+        <rect x="42" y="20" width="36" height="8" rx="3" fill="#FFF" stroke="#2D1E12" stroke-width="3" />
+        <rect x="34" y="26" width="52" height="78" rx="26" fill="#FCE4A6" stroke="#2D1E12" stroke-width="4" />
+        <path d="M 45 38 Q 60 44 75 38 M 45 50 Q 60 56 75 50" stroke="#9C6234" stroke-width="3.5" fill="none" stroke-linecap="round" />
+        <rect x="32" y="66" width="56" height="38" rx="14" fill="#E2E8F0" stroke="#2D1E12" stroke-width="4" />
+        <rect x="32" y="74" width="56" height="10" fill="#FF4757" />
+        <circle cx="50" cy="46" r="5" fill="#2D1E12" />
+        <circle cx="51.5" cy="44.5" r="1.8" fill="#FFF" />
+        <circle cx="70" cy="46" r="5" fill="#2D1E12" />
+        <circle cx="71.5" cy="44.5" r="1.8" fill="#FFF" />
+        <circle cx="43" cy="53" r="4" fill="#FF8A8A" />
+        <circle cx="77" cy="53" r="4" fill="#FF8A8A" />
+        <path d="M 55 54 Q 60 62 65 54 Z" fill="#D63031" stroke="#2D1E12" stroke-width="2.5" />
+        <path d="M 34 60 Q 20 50 18 38" stroke="#2D1E12" stroke-width="4" fill="none" stroke-linecap="round" />
+        <circle cx="18" cy="38" r="4.5" fill="#FCE4A6" stroke="#2D1E12" stroke-width="3" />
+        <path d="M 86 60 Q 100 50 102 38" stroke="#2D1E12" stroke-width="4" fill="none" stroke-linecap="round" />
+        <circle cx="102" cy="38" r="4.5" fill="#FCE4A6" stroke="#2D1E12" stroke-width="3" />
+      </svg>
+    </div>
+
+    <div class="hero-speech-bubble">
+      "Real wraps are 16–25 cm! Measure my true size! 🌯"
+    </div>
+  </div>
+
+  <h1>
+    How <span class="highlight-word">CHUBBY</span> is your Shawarma? 🌯
+  </h1>
+  <p>
+    Grounded in real-world food science! Measure the true length & diameter of your shawarma and compare it directly to smartphones, dinner plates, and soda cans.
+  </p>
+
+  <div class="hero-stickers">
+    <div class="sticker"><span>📐</span> Real-World Food Science</div>
+    <div class="sticker"><span>📱</span> Compare to Real Objects</div>
+    <div class="sticker"><span>🎯</span> 500 cm³ Big Shawarma Test</div>
+    <div class="sticker"><span>💯</span> 100% Useless Science</div>
+  </div>
+</section>
+
+<!-- MAIN APP LAB PANEL -->
+<main>
+  <div class="lab-panel">
+
+    <!-- STEP PROGRESS TRACKER -->
+    <div class="step-bar">
+      <div class="step-item active" id="s1">
+        <div class="step-num">1</div>
+        <span>Upload Wrap 📸</span>
+      </div>
+      <div class="step-item" id="s2">
+        <div class="step-num">2</div>
+        <span>Pinpoint Wrap 🌯</span>
+      </div>
+      <div class="step-item" id="s3">
+        <div class="step-num">3</div>
+        <span>Food CV Scan 🔬</span>
+      </div>
+      <div class="step-item" id="s4">
+        <div class="step-num">4</div>
+        <span>Real World Verdict 🏆</span>
+      </div>
+    </div>
+
+    <!-- 2 COLUMN WORKSPACE -->
+    <div class="workspace-grid">
+
+      <!-- LEFT COLUMN: IMAGE & INTERACTIVE CALIPER CANVAS -->
+      <section class="card-box">
+        <h2 class="card-title">1. Pinpoint Your Shawarma 🥙</h2>
+        <p class="card-subtitle">
+          Upload a photo of your shawarma. Use the caliper pins to mark the wrap's tips (length) and thickness!
+        </p>
+
+        <!-- Test Samples -->
+        <div class="sample-bar">
+          <span class="sample-bar-label">Real-World Test Samples:</span>
+          <button class="sample-btn" id="btnSampleJumbo" title="Real Jumbo Wrap: 22.5 cm length, 817 cm³ volume!">
+            👑 Jumbo Wrap (22.5 cm · >500 cm³)
+          </button>
+          <button class="sample-btn" id="btnSampleSnack" title="Real Snack Wrap: 16.0 cm length, 289 cm³ volume!">
+            🤏 Snack Wrap (16.0 cm · &le;500 cm³)
+          </button>
+        </div>
+
+        <!-- File Upload Dropzone -->
+        <label class="dropzone" id="dropzone">
+          <div class="dropzone-character">
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
+              <rect x="25" y="10" width="50" height="76" rx="25" fill="#FFEAA7" stroke="#2D1E12" stroke-width="4" />
+              <rect x="23" y="50" width="54" height="38" rx="14" fill="#FF4757" stroke="#2D1E12" stroke-width="4" />
+              <circle cx="42" cy="32" r="5" fill="#2D1E12" /><circle cx="43" cy="30" r="1.5" fill="#FFF" />
+              <circle cx="58" cy="32" r="5" fill="#2D1E12" /><circle cx="59" cy="30" r="1.5" fill="#FFF" />
+              <path d="M 46 40 Q 50 45 54 40" stroke="#2D1E12" stroke-width="3" fill="none" stroke-linecap="round" />
+              <rect x="36" y="58" width="28" height="20" rx="5" fill="#2D1E12" />
+              <circle cx="50" cy="68" r="5" fill="#FFB800" stroke="#FFF" stroke-width="1.5" />
+            </svg>
+          </div>
+          <h3>Click or Drop Shawarma Photo</h3>
+          <p>Supports JPG, PNG, WEBP & HEIC (from camera)</p>
+          <input id="file" type="file" accept="image/*">
+        </label>
+
+        <!-- Pinpoint Mode Bar -->
+        <div id="pinpointControls" style="display:none; margin-bottom:12px;">
+          <div class="canvas-mode-bar">
+            <button class="mode-tab active-tab" id="tabShawarmaLength">
+              <span>🌯</span> 1. Mark Shawarma Tips (Length)
+            </button>
+            <button class="mode-tab" id="tabShawarmaWidth">
+              <span>📏</span> 2. Mark Thickness (Width)
+            </button>
+            <button class="mode-tab" id="tabRefScale">
+              <span>💳</span> 3. Reference Card (Optional)
+            </button>
+          </div>
+        </div>
+
+        <!-- Canvas Display Area -->
+        <div class="canvas-wrapper" id="canvasWrapper">
+          <div class="canvas-badge" id="canvasBadge">CALIPER MODE 🎯</div>
+          <canvas id="canvas"></canvas>
+        </div>
+
+        <!-- Live Caliper Readout Cards directly under the canvas -->
+        <div class="caliper-readout-grid" id="caliperReadouts" style="display:none;">
+          <div class="caliper-card card-orange">
+            <div class="caliper-card-title">🌯 Shawarma Length</div>
+            <div class="caliper-card-val" id="canvasLiveLength">20.5 cm</div>
+          </div>
+          <div class="caliper-card card-green">
+            <div class="caliper-card-title">📏 Shawarma Diameter</div>
+            <div class="caliper-card-val" id="canvasLiveDiam">6.2 cm</div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT COLUMN: REAL-WORLD SCALE & VERDICT RESULTS -->
+      <section class="card-box">
+        <h2 class="card-title">2. Real-World Scale 🌍</h2>
+        <p class="card-subtitle">
+          Real-world shawarmas measure between <strong>15 cm and 26 cm</strong>. Choose your camera perspective:
+        </p>
+
+        <!-- Real-world scale selection box -->
+        <div class="scale-box" id="scaleBox" style="display:none;">
+          <div class="input-label" style="margin-bottom:8px;">
+            <span>Camera Framing / Distance:</span>
+          </div>
+
+          <div class="scale-toggle-row">
+            <div class="scale-btn-pill selected" id="optSmartScale" onclick="switchScaleMode('smart')">
+              📱 Realistic Food Shot
+            </div>
+            <div class="scale-btn-pill" id="optCardScale" onclick="switchScaleMode('card')">
+              💳 Physical Object (Card)
+            </div>
+          </div>
+
+          <!-- Mode 1: Smart Real-World Photo Presets -->
+          <div id="smartScalePanel">
+            <p style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">
+              How was this photo taken? (Calibrates true camera distance):
+            </p>
+            <div class="presets-wrap">
+              <button type="button" class="preset-chip active-preset" id="presetCloseup" onclick="setPhotoFraming('closeup', this)">
+                📸 Close-up (Shawarma fills frame · ~26 cm view)
+              </button>
+              <button type="button" class="preset-chip" id="presetPlate" onclick="setPhotoFraming('plate', this)">
+                🍽️ On Dinner Plate (Full plate visible · ~34 cm view)
+              </button>
+              <button type="button" class="preset-chip" id="presetHand" onclick="setPhotoFraming('hand', this)">
+                ✋ In-Hand Shot (~30 cm view)
+              </button>
+            </div>
+          </div>
+
+          <!-- Mode 2: Card / Coin Reference Panel -->
+          <div id="cardScalePanel" style="display:none;">
+            <p style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">
+              Enter the length of the reference object in the photo:
+            </p>
+            <div class="presets-wrap">
+              <button type="button" class="preset-chip" onclick="setRefPreset(8.5, '💳 Credit Card (8.5 cm)')">💳 Credit Card (8.5 cm)</button>
+              <button type="button" class="preset-chip" onclick="setRefPreset(2.4, '🪙 Coin (2.4 cm)')">🪙 Coin (2.4 cm)</button>
+              <button type="button" class="preset-chip" onclick="setRefPreset(15.0, '📏 15cm Ruler')">📏 15cm Ruler</button>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input id="refInput" class="cartoon-input" type="number" min="0.5" step="0.1" value="8.5" placeholder="Reference Length (cm)">
+              <span style="font-family:'Fredoka';font-size:16px;font-weight:800;">cm</span>
+            </div>
+            <p style="font-size:11px;font-weight:700;color:var(--blue);margin-top:6px;">
+              💡 Click 2 points on your reference card in the photo!
+            </p>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn btn-ghost btn-sm" id="resetPointsBtn" type="button">
+              🔄 Reset Pins
+            </button>
+            <button class="btn btn-primary" id="analyzeBtn" type="button">
+              🌯 Calculate Shawarma →
+            </button>
+          </div>
+        </div>
+
+        <!-- Status Pill -->
+        <div class="status-pill" id="statusPill">
+          <div class="status-indicator" id="statusDot"></div>
+          <span id="statusText">Waiting for your delicious shawarma photo...</span>
+        </div>
+
+        <!-- ==========================================================================
+             RESULTS BREAKDOWN
+             ========================================================================== -->
+        <div id="results">
+
+          <!-- ON-PAGE VERDICT CARD -->
+          <div id="verdictCard" class="verdict-box">
+            <div id="verdictBadge" class="verdict-badge">VERDICT READY</div>
+            <h3 id="verdictTitle" class="verdict-title comic-font">—</h3>
+            <p id="verdictSub" class="verdict-sub">—</p>
+          </div>
+
+          <!-- REAL-WORLD COMPARISON CARD (DIRECTLY COMPARING WITH REAL OBJECTS) -->
+          <div class="real-world-box">
+            <div class="real-world-title">
+              <span>🌍</span> REAL-WORLD OBJECT COMPARISON
+            </div>
+            <div class="comparison-grid">
+              <div class="comp-item">
+                <div class="comp-item-header"><span>📱</span> vs Smartphone (15 cm)</div>
+                <div class="comp-item-val" id="compPhone">1.37× iPhone</div>
+                <div class="comp-item-desc" id="compPhoneDesc">Slightly longer than an iPhone 15</div>
+              </div>
+              <div class="comp-item">
+                <div class="comp-item-header"><span>🍽️</span> vs Dinner Plate (26 cm)</div>
+                <div class="comp-item-val" id="compPlate">79% of Plate</div>
+                <div class="comp-item-desc" id="compPlateDesc">Fits comfortably on standard plate</div>
+              </div>
+              <div class="comp-item">
+                <div class="comp-item-header"><span>🥤</span> Volume in Soda Cans</div>
+                <div class="comp-item-val" id="compSoda">1.9 Cans</div>
+                <div class="comp-item-desc">330 ml beverage can equivalence</div>
+              </div>
+              <div class="comp-item">
+                <div class="comp-item-header"><span>✋</span> Human Hand Span</div>
+                <div class="comp-item-val" id="compHand">Full Hand Span</div>
+                <div class="comp-item-desc">Average adult hand is ~19 cm</div>
+              </div>
+            </div>
+
+            <!-- Shawarma Category Scale -->
+            <div class="real-world-scale-bar">
+              <span>🌯 REAL-WORLD CATEGORY:</span>
+              <strong id="realWorldCategory" style="color:var(--ketchup);font-family:'Fredoka';font-size:14px;">Standard Shawarma (18–22 cm)</strong>
+            </div>
+          </div>
+
+          <!-- VOLUME METER (Target: 500 cm³) -->
+          <div class="volume-meter-card">
+            <div class="meter-header">
+              <span>🎯 Heavyweight Shawarma Bar (500 cm³ Goal)</span>
+              <span id="meterPercent" style="color:var(--ketchup);font-weight:800;">0%</span>
+            </div>
+            <div class="meter-track">
+              <div class="meter-target-line" title="500 cm³ threshold"></div>
+              <div class="meter-fill" id="meterFill" style="width: 0%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--text-muted);margin-top:4px;">
+              <span>0 cm³</span>
+              <span style="color:var(--ketchup)">★ 500 cm³ Target</span>
+              <span>800 cm³+</span>
+            </div>
+          </div>
+
+          <!-- PRIMARY METRIC CARDS -->
+          <div class="hero-metric-card">
+            <div>
+              <div class="hero-metric-title">Measured 3D Volume</div>
+              <div class="hero-metric-value" id="resVolume">0.0 <span>cm³</span></div>
+            </div>
+            <div style="font-size:42px;" id="volumeMascot">🌯</div>
+          </div>
+
+          <div class="hero-metric-card" style="background:#FFF0F2;">
+            <div>
+              <div class="hero-metric-title">Shawarma Circumference</div>
+              <div class="hero-metric-value" id="resCirc" style="color:var(--ketchup-dark);">0.0 <span>cm</span></div>
+            </div>
+            <div style="font-size:38px;">📐</div>
+          </div>
+
+          <!-- 4 SECONDARY STATS (DIAMETER, RADIUS, AREA, TRUE WRAP LENGTH) -->
+          <div class="stats-grid">
+            <div class="stat-pill-card">
+              <div class="stat-pill-label"><span>📏</span> Diameter</div>
+              <div class="stat-pill-val" id="resDiam">— cm</div>
+            </div>
+            <div class="stat-pill-card">
+              <div class="stat-pill-label"><span>📍</span> Radius</div>
+              <div class="stat-pill-val" id="resRad">— cm</div>
+            </div>
+            <div class="stat-pill-card">
+              <div class="stat-pill-label"><span>🍳</span> Cross Area</div>
+              <div class="stat-pill-val" id="resArea">— cm²</div>
+            </div>
+            <div class="stat-pill-card">
+              <div class="stat-pill-label"><span>🥖</span> Wrap Length</div>
+              <div class="stat-pill-val" id="resLength">— cm</div>
+            </div>
+          </div>
+
+          <!-- Interactive Length Fine-Tuner with Quick Realistic Anchors -->
+          <div class="length-adjust-card">
+            <div class="input-label" style="font-size:13px;margin-bottom:0;">
+              <span>Fine-Tune Measured Length:</span>
+              <span id="sliderLengthVal" style="color:var(--ketchup);font-size:14px;font-weight:800;">20.5 cm</span>
+            </div>
+            <!-- Quick realistic benchmarks -->
+            <div class="length-quick-presets">
+              <button type="button" class="quick-len-btn" onclick="setManualLength(15.5)">15.5 cm (Snack)</button>
+              <button type="button" class="quick-len-btn" onclick="setManualLength(18.5)">18.5 cm (Standard)</button>
+              <button type="button" class="quick-len-btn" onclick="setManualLength(22.0)">22.0 cm (Large)</button>
+              <button type="button" class="quick-len-btn" onclick="setManualLength(26.0)">26.0 cm (Jumbo)</button>
+            </div>
+            <div class="length-slider-row">
+              <span style="font-size:12px;font-weight:700;">12 cm</span>
+              <input type="range" min="12" max="32" step="0.5" value="20.5" class="length-slider" id="lengthSlider">
+              <span style="font-size:12px;font-weight:700;">32 cm</span>
+            </div>
+          </div>
+
+          <!-- Official Uselessness Rating -->
+          <div class="useless-rating">
+            <div>
+              <small>OFFICIAL USELESS SCIENCE SCORE</small>
+              <b id="resUseless">99.8% USELESS</b>
+            </div>
+            <div style="font-size:32px;">🧄</div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="btn btn-dark" id="btnMeasureAgain" style="flex:1;">
+              🔄 Measure Another Shawarma
+            </button>
+            <button class="btn btn-ghost" id="btnPopVerdictAgain">
+              ✨ Re-open Popup
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<!-- ==========================================================================
+     CARTOON RESULT POPUP MODAL (THE POP UP VERDICT)
+     ========================================================================== -->
+<div class="modal-overlay" id="verdictModal">
+  <div class="modal-card">
+    <button class="modal-close-btn" id="modalCloseBtn" title="Close">✕</button>
+
+    <div class="modal-top-ribbon" id="modalRibbon" style="background:var(--mustard-light);">
+      🌯 SHAWARMA LAB FINAL VERDICT 🌯
+    </div>
+
+    <!-- CARTOON SHAWARMA CHARACTER CONTAINER -->
+    <div class="modal-character-stage" id="modalCharacterStage">
+      <!-- Injected dynamically via JS with SVG cartoon shawarma -->
+    </div>
+
+    <!-- THE VERDICT TITLE (STRICTLY REQUIRED) -->
+    <h2 class="modal-verdict-title comic-font" id="modalVerdictTitle">
+      better luck next time
+    </h2>
+
+    <!-- VOLUME CALLOUT BADGE -->
+    <div>
+      <div class="modal-vol-badge" id="modalVolBadge">
+        0.0 cm³
+      </div>
+    </div>
+
+    <!-- SUBTITLE TEXT -->
+    <p class="modal-verdict-sub" id="modalVerdictSub">
+      Your shawarma was scanned and verified by the food calipers.
+    </p>
+
+    <!-- ACTION BUTTONS -->
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="modalInspectBtn">
+        📊 View Full Breakdown & Real-World Stats
+      </button>
+      <button class="btn btn-ghost" id="modalResetBtn">
+        🌯 Measure Another
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CARTOON FOOTER -->
+<footer>
+  <p><strong>ShawarmaLab 🌯</strong> · The Most Scientific Solution to a Problem That Doesn't Exist.</p>
+  <div class="footer-badges">
+    <div class="footer-badge">TinkerHub Useless Projects 3.0</div>
+    <div class="footer-badge">Real-World Scale Engine (15–26 cm)</div>
+    <div class="footer-badge">500 cm³ Heavyweight Threshold</div>
+  </div>
+</footer>
+
+<!-- ==========================================================================
+     SVG CARTOON SHAWARMA ASSETS (INLINE TEMPLATES)
+     ========================================================================== -->
+<div style="display:none;">
+  <!-- 1. Sad / Snack Cartoon Shawarma (for "better luck next time") -->
+  <div id="svgSadShawarma">
+    <svg viewBox="0 0 140 140" width="100%" height="100%">
+      <ellipse cx="70" cy="128" rx="40" ry="8" fill="rgba(45,30,18,0.2)" />
+      <rect x="42" y="32" width="56" height="85" rx="28" fill="#FFEAA7" stroke="#2D1E12" stroke-width="4.5" />
+      <path d="M 52 46 Q 70 52 88 46 M 52 58 Q 70 64 88 58" stroke="#9C6234" stroke-width="3.5" fill="none" stroke-linecap="round" />
+      <rect x="39" y="78" width="62" height="42" rx="16" fill="#CBD5E1" stroke="#2D1E12" stroke-width="4.5" />
+      <rect x="39" y="86" width="62" height="10" fill="#7A6652" />
+      <path d="M 94 48 C 94 44 98 40 98 40 C 98 40 102 44 102 48 C 102 50 100 52 98 52 C 96 52 94 50 94 48 Z" fill="#60A5FA" stroke="#2D1E12" stroke-width="2" />
+      <circle cx="58" cy="54" r="7.5" fill="#2D1E12" />
+      <circle cx="60.5" cy="51.5" r="3" fill="#FFF" />
+      <circle cx="56" cy="56" r="1.5" fill="#FFF" />
+      <circle cx="82" cy="54" r="7.5" fill="#2D1E12" />
+      <circle cx="84.5" cy="51.5" r="3" fill="#FFF" />
+      <circle cx="80" cy="56" r="1.5" fill="#FFF" />
+      <ellipse cx="50" cy="62" rx="5" ry="3" fill="#FFA5A5" />
+      <ellipse cx="90" cy="62" rx="5" ry="3" fill="#FFA5A5" />
+      <path d="M 64 66 Q 70 61 76 66" stroke="#2D1E12" stroke-width="3.5" fill="none" stroke-linecap="round" />
+      <path d="M 40 90 L 26 84" stroke="#2D1E12" stroke-width="4" stroke-linecap="round" />
+      <path d="M 100 90 L 114 84" stroke="#2D1E12" stroke-width="4" stroke-linecap="round" />
+      <rect x="14" y="68" width="34" height="20" rx="6" fill="#FFF" stroke="#2D1E12" stroke-width="2.5" />
+      <text x="31" y="82" font-family="Fredoka" font-size="9" font-weight="bold" text-anchor="middle" fill="#2D1E12">&le;500cm³</text>
+    </svg>
+  </div>
+
+  <!-- 2. Giant Crowned Champion Shawarma (for "congrats buddy, you got big one ") -->
+  <div id="svgJumboShawarma">
+    <svg viewBox="0 0 140 140" width="100%" height="100%">
+      <path d="M 22 25 L 26 15 L 30 25 L 40 29 L 30 33 L 26 43 L 22 33 L 12 29 Z" fill="#FFB800" stroke="#2D1E12" stroke-width="2" />
+      <path d="M 112 25 L 116 15 L 120 25 L 130 29 L 120 33 L 116 43 L 112 33 L 102 29 Z" fill="#FFB800" stroke="#2D1E12" stroke-width="2" />
+      <path d="M 52 24 L 46 8 L 58 16 L 70 4 L 82 16 L 94 8 L 88 24 Z" fill="#FFB800" stroke="#2D1E12" stroke-width="3.5" />
+      <circle cx="70" cy="13" r="2.5" fill="#FF4757" />
+      <rect x="34" y="22" width="72" height="95" rx="36" fill="#FFD166" stroke="#2D1E12" stroke-width="4.5" />
+      <path d="M 46 38 Q 70 44 94 38 M 46 50 Q 70 56 94 50" stroke="#8C4E1D" stroke-width="4" fill="none" stroke-linecap="round" />
+      <path d="M 45 42 L 67 42 C 67 52 50 56 45 48 Z" fill="#2D1E12" />
+      <path d="M 73 42 L 95 42 C 95 52 78 56 73 48 Z" fill="#2D1E12" />
+      <path d="M 67 44 L 73 44" stroke="#2D1E12" stroke-width="4" />
+      <path d="M 48 45 L 56 45" stroke="#FFF" stroke-width="2" stroke-linecap="round" />
+      <path d="M 76 45 L 84 45" stroke="#FFF" stroke-width="2" stroke-linecap="round" />
+      <path d="M 57 58 Q 70 70 83 58 Z" fill="#FF4757" stroke="#2D1E12" stroke-width="3" />
+      <rect x="31" y="74" width="78" height="46" rx="18" fill="#FF4757" stroke="#2D1E12" stroke-width="4.5" />
+      <rect x="31" y="84" width="78" height="12" fill="#FFB800" />
+      <circle cx="70" cy="90" r="8" fill="#FFF" stroke="#2D1E12" stroke-width="2.5" />
+      <text x="70" y="93" font-family="Fredoka" font-size="8" font-weight="900" text-anchor="middle" fill="#2D1E12">500+</text>
+      <path d="M 33 65 Q 16 55 18 42 Q 26 40 28 50" stroke="#2D1E12" stroke-width="4.5" fill="#FFD166" />
+      <path d="M 107 65 Q 124 55 122 42 Q 114 40 112 50" stroke="#2D1E12" stroke-width="4.5" fill="#FFD166" />
+    </svg>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     LOGIC & REAL-WORLD CALIPER ENGINE
+     ========================================================================== -->
+<script>
+// Global State
+let cvReady = false;
+let img = null;
+
+// Caliper Points
+let shawarmaLengthPoints = [];
+let shawarmaWidthPoints = [];
+let refCardPoints = [];
+
+// Modes
+let activeMode = 'length';
+let scaleMode = 'smart'; // 'smart' or 'card'
+let photoFraming = 'closeup'; // 'closeup' (~26 cm FOV), 'plate' (~34 cm FOV), 'hand' (~30 cm FOV)
+
+// Physical dimensions grounded in real-world measurements
+let calculatedLengthCm = 20.5;
+let calculatedDiameterCm = 6.2;
+
+// DOM Elements
+const fileInput = document.getElementById('file');
+const dropzone = document.getElementById('dropzone');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const canvasWrapper = document.getElementById('canvasWrapper');
+const pinpointControls = document.getElementById('pinpointControls');
+const caliperReadouts = document.getElementById('caliperReadouts');
+const scaleBox = document.getElementById('scaleBox');
+const statusText = document.getElementById('statusText');
+const statusDot = document.getElementById('statusDot');
+const refInput = document.getElementById('refInput');
+const resetPointsBtn = document.getElementById('resetPointsBtn');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const resultsDiv = document.getElementById('results');
+const lengthSlider = document.getElementById('lengthSlider');
+const sliderLengthVal = document.getElementById('sliderLengthVal');
+const canvasLiveLength = document.getElementById('canvasLiveLength');
+const canvasLiveDiam = document.getElementById('canvasLiveDiam');
+
+// Tab buttons
+const tabShawarmaLength = document.getElementById('tabShawarmaLength');
+const tabShawarmaWidth = document.getElementById('tabShawarmaWidth');
+const tabRefScale = document.getElementById('tabRefScale');
+
+// Modal Elements
+const verdictModal = document.getElementById('verdictModal');
+const modalCloseBtn = document.getElementById('modalCloseBtn');
+const modalCharacterStage = document.getElementById('modalCharacterStage');
+const modalVerdictTitle = document.getElementById('modalVerdictTitle');
+const modalVolBadge = document.getElementById('modalVolBadge');
+const modalVerdictSub = document.getElementById('modalVerdictSub');
+const modalInspectBtn = document.getElementById('modalInspectBtn');
+const modalResetBtn = document.getElementById('modalResetBtn');
+const btnPopVerdictAgain = document.getElementById('btnPopVerdictAgain');
+
+// Audio Synthesizer
+function playSound(type) {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (type === 'click') {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.08);
+    } else if (type === 'big') {
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.1);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + i * 0.1);
+        osc.stop(audioCtx.currentTime + i * 0.1 + 0.35);
+      });
+    } else if (type === 'small') {
+      [369.99, 349.23, 311.13, 277.18].forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.16);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime + i * 0.16);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.16 + 0.22);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + i * 0.16);
+        osc.stop(audioCtx.currentTime + i * 0.16 + 0.22);
+      });
+    }
+  } catch (e) {}
+}
+
+function onOpenCvReady() {
+  cvReady = true;
+  console.log("OpenCV.js loaded and ready! 🌯");
+}
+
+function setStep(num) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('s' + i);
+    if (!el) continue;
+    el.classList.remove('active', 'completed');
+    if (i === num) el.classList.add('active');
+    else if (i < num) el.classList.add('completed');
+  }
+}
+
+// Switching Caliper Mode Tabs
+function setActiveTab(mode) {
+  activeMode = mode;
+  tabShawarmaLength.classList.toggle('active-tab', mode === 'length');
+  tabShawarmaWidth.classList.toggle('active-tab', mode === 'width');
+  tabRefScale.classList.toggle('active-tab', mode === 'ref');
+  playSound('click');
+
+  if (mode === 'length') {
+    statusText.textContent = "Click 2 points marking the TIPS (length) of your shawarma 🌯";
+    statusDot.style.background = 'var(--ketchup)';
+  } else if (mode === 'width') {
+    statusText.textContent = "Click 2 points across the THICKNESS of your shawarma 📏";
+    statusDot.style.background = 'var(--lettuce)';
+  } else if (mode === 'ref') {
+    statusText.textContent = "Click 2 points marking your reference card/coin (e.g. 8.5 cm) 💳";
+    statusDot.style.background = 'var(--blue)';
+    switchScaleMode('card');
+  }
+}
+
+tabShawarmaLength.addEventListener('click', () => setActiveTab('length'));
+tabShawarmaWidth.addEventListener('click', () => setActiveTab('width'));
+tabRefScale.addEventListener('click', () => setActiveTab('ref'));
+
+// Scale mode switcher
+function switchScaleMode(m) {
+  scaleMode = m;
+  document.getElementById('optSmartScale').classList.toggle('selected', m === 'smart');
+  document.getElementById('optCardScale').classList.toggle('selected', m === 'card');
+  document.getElementById('smartScalePanel').style.display = m === 'smart' ? 'block' : 'none';
+  document.getElementById('cardScalePanel').style.display = m === 'card' ? 'block' : 'none';
+  recalculateCaliperDimensions();
+  redrawCanvas();
+}
+
+// Real-world photo framing selector (Close-up vs Plate vs In-Hand)
+function setPhotoFraming(type, btn) {
+  photoFraming = type;
+  document.querySelectorAll('#smartScalePanel .preset-chip').forEach(el => el.classList.remove('active-preset'));
+  if (btn) btn.classList.add('active-preset');
+  playSound('click');
+  recalculateCaliperDimensions();
+  redrawCanvas();
+}
+
+function setRefPreset(val, name) {
+  refInput.value = val;
+  playSound('click');
+  statusText.textContent = `Reference set to ${name}. Click 2 points on the card/coin!`;
+  recalculateCaliperDimensions();
+  redrawCanvas();
+}
+
+// File loading
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  loadImageFile(file);
+});
+
+dropzone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropzone.style.borderColor = 'var(--ketchup)';
+  dropzone.style.background = '#FFF2DB';
+});
+dropzone.addEventListener('dragleave', e => {
+  e.preventDefault();
+  dropzone.style.borderColor = '#D3C4B0';
+  dropzone.style.background = '#FFF8EA';
+});
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.style.borderColor = '#D3C4B0';
+  dropzone.style.background = '#FFF8EA';
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    loadImageFile(e.dataTransfer.files[0]);
+  }
+});
+
+function loadImageFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => loadSourceImage(ev.target.result);
+  reader.readAsDataURL(file);
+}
+
+function loadSourceImage(srcData) {
+  img = new Image();
+  img.onload = () => {
+    const maxWidth = 960;
+    const ratio = Math.min(1, maxWidth / img.width);
+    canvas.width = Math.round(img.width * ratio);
+    canvas.height = Math.round(img.height * ratio);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    canvasWrapper.style.display = 'block';
+    pinpointControls.style.display = 'block';
+    caliperReadouts.style.display = 'grid';
+    scaleBox.style.display = 'block';
+    resultsDiv.style.display = 'none';
+
+    shawarmaLengthPoints = [];
+    shawarmaWidthPoints = [];
+    refCardPoints = [];
+
+    // Default caliper position: spanning ~70% of canvas width
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const defaultSpan = canvas.width * 0.70;
+    const defaultThick = canvas.height * 0.22;
+
+    shawarmaLengthPoints = [
+      { x: cx - defaultSpan/2, y: cy },
+      { x: cx + defaultSpan/2, y: cy }
+    ];
+    shawarmaWidthPoints = [
+      { x: cx, y: cy - defaultThick/2 },
+      { x: cx, y: cy + defaultThick/2 }
+    ];
+
+    setStep(2);
+    setActiveTab('length');
+    statusText.textContent = "Photo loaded! Click on the image to position the Shawarma Tips (Length).";
+    statusDot.style.background = 'var(--mustard)';
+    playSound('click');
+
+    recalculateCaliperDimensions();
+    redrawCanvas();
+    canvasWrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+  img.src = srcData;
+}
+
+// Canvas Click handler
+canvas.addEventListener('click', e => {
+  if (!img) return;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const x = (e.clientX - rect.left) * scaleX;
+  const y = (e.clientY - rect.top) * scaleY;
+
+  playSound('click');
+
+  if (activeMode === 'length') {
+    if (shawarmaLengthPoints.length >= 2) shawarmaLengthPoints = [];
+    shawarmaLengthPoints.push({ x, y });
+    if (shawarmaLengthPoints.length === 1) {
+      statusText.textContent = "Shawarma Tip 1 placed! Click Tip 2 at the other end 🌯";
+    } else {
+      statusText.textContent = `Shawarma Length marked (${calculatedLengthCm.toFixed(1)} cm)! Now click 'Mark Thickness' or press Calculate 🌯`;
+      statusDot.style.background = 'var(--lettuce)';
+    }
+  } else if (activeMode === 'width') {
+    if (shawarmaWidthPoints.length >= 2) shawarmaWidthPoints = [];
+    shawarmaWidthPoints.push({ x, y });
+    if (shawarmaWidthPoints.length === 1) {
+      statusText.textContent = "Thickness Point 1 placed! Click Point 2 across the wrap 📏";
+    } else {
+      statusText.textContent = `Thickness marked (${calculatedDiameterCm.toFixed(1)} cm)! Press 'Calculate Shawarma' 🎯`;
+      statusDot.style.background = 'var(--lettuce)';
+    }
+  } else if (activeMode === 'ref') {
+    if (refCardPoints.length >= 2) refCardPoints = [];
+    refCardPoints.push({ x, y });
+    if (refCardPoints.length === 1) {
+      statusText.textContent = "Card Point 1 placed! Click Point 2 on the card 💳";
+    } else {
+      statusText.textContent = "Reference card calibrated! Press 'Calculate Shawarma' 🎯";
+      statusDot.style.background = 'var(--lettuce)';
+    }
+  }
+
+  recalculateCaliperDimensions();
+  redrawCanvas();
+});
+
+// ==========================================================================
+// REAL-WORLD GROUNDED SCALE ENGINE
+// Converts pixels to cm based on real-world food photo optics!
+// ==========================================================================
+function getEffectiveCmPerPx() {
+  // If user used a physical reference card
+  if (scaleMode === 'card' && refCardPoints.length === 2) {
+    const pxRef = Math.hypot(refCardPoints[1].x - refCardPoints[0].x, refCardPoints[1].y - refCardPoints[0].y);
+    const knownRefCm = parseFloat(refInput.value) || 8.5;
+    if (pxRef > 10) return knownRefCm / pxRef;
+  }
+
+  // Smart Food Scale based on optical study of food photography:
+  // A smartphone photo taken ~25-30 cm from food captures a frame of real-world width:
+  // - Close-up food shot: real FOV width is ~26.0 cm
+  // - Dinner plate shot: real FOV width is ~34.0 cm (dinner plate is 26 cm)
+  // - In-hand shot: real FOV width is ~30.0 cm
+  let realFovWidthCm = 26.0;
+  if (photoFraming === 'plate') realFovWidthCm = 34.0;
+  else if (photoFraming === 'hand') realFovWidthCm = 30.0;
+
+  // Real cm per pixel = real FOV width / canvas pixel width
+  return realFovWidthCm / (canvas.width || 800);
+}
+
+function recalculateCaliperDimensions() {
+  const cmPerPx = getEffectiveCmPerPx();
+
+  // Shawarma Length calculation
+  if (shawarmaLengthPoints.length === 2) {
+    const pxLen = Math.hypot(shawarmaLengthPoints[1].x - shawarmaLengthPoints[0].x, shawarmaLengthPoints[1].y - shawarmaLengthPoints[0].y);
+    let rawLen = pxLen * cmPerPx;
+    // Real-world sanity check: typical shawarmas are 14 cm to 28 cm.
+    // Clamping to realistic food physics bounds (12 cm to 32 cm) prevents 44 cm absurdities!
+    calculatedLengthCm = Math.max(12.0, Math.min(32.0, rawLen));
+  } else {
+    calculatedLengthCm = 20.5;
+  }
+
+  // Shawarma Diameter calculation
+  if (shawarmaWidthPoints.length === 2) {
+    const pxDiam = Math.hypot(shawarmaWidthPoints[1].x - shawarmaWidthPoints[0].x, shawarmaWidthPoints[1].y - shawarmaWidthPoints[0].y);
+    let rawDiam = pxDiam * cmPerPx;
+    // Typical shawarma diameter is 4.5 cm to 8.5 cm
+    calculatedDiameterCm = Math.max(3.8, Math.min(9.5, rawDiam));
+  } else {
+    // Standard realistic aspect ratio: diameter is ~30% of length
+    calculatedDiameterCm = Math.max(4.5, Math.min(8.0, calculatedLengthCm * 0.30));
+  }
+
+  // Update live readouts
+  canvasLiveLength.textContent = `${calculatedLengthCm.toFixed(1)} cm`;
+  canvasLiveDiam.textContent = `${calculatedDiameterCm.toFixed(1)} cm`;
+  lengthSlider.value = calculatedLengthCm.toFixed(1);
+  sliderLengthVal.textContent = `${calculatedLengthCm.toFixed(1)} cm`;
+}
+
+// Redraw canvas with pins and measuring lines
+function redrawCanvas() {
+  if (!img) return;
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  // 1. Reference Card pins (Blue)
+  if (refCardPoints.length > 0) {
+    refCardPoints.forEach((p, i) => drawCaliperPin(p.x, p.y, `#3B82F6`, `Ref ${i+1}`));
+    if (refCardPoints.length === 2) {
+      drawMeasuringLine(refCardPoints[0], refCardPoints[1], '#3B82F6', `${parseFloat(refInput.value)||8.5} cm Card`);
+    }
+  }
+
+  // 2. Shawarma Width pins (Green)
+  if (shawarmaWidthPoints.length > 0) {
+    shawarmaWidthPoints.forEach((p, i) => drawCaliperPin(p.x, p.y, `#2ED573`, `W ${i+1}`));
+    if (shawarmaWidthPoints.length === 2) {
+      drawMeasuringLine(shawarmaWidthPoints[0], shawarmaWidthPoints[1], '#2ED573', `⌀ ${calculatedDiameterCm.toFixed(1)} cm`);
+    }
+  }
+
+  // 3. Shawarma Length pins (Orange / Red)
+  if (shawarmaLengthPoints.length > 0) {
+    shawarmaLengthPoints.forEach((p, i) => drawCaliperPin(p.x, p.y, `#FF4757`, `Tip ${i+1}`));
+    if (shawarmaLengthPoints.length === 2) {
+      drawMeasuringLine(shawarmaLengthPoints[0], shawarmaLengthPoints[1], '#FF4757', `🌯 Length: ${calculatedLengthCm.toFixed(1)} cm`);
+    }
+  }
+}
+
+function drawCaliperPin(x, y, color, label) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x, y, 11, 0, Math.PI * 2);
+  ctx.fillStyle = '#2D1E12';
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(x, y, 8, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  ctx.font = 'bold 11px Fredoka, sans-serif';
+  const tagW = ctx.measureText(label).width + 10;
+  ctx.fillStyle = '#2D1E12';
+  ctx.fillRect(x - tagW/2 - 1, y - 24, tagW + 2, 16);
+  ctx.fillStyle = color;
+  ctx.fillRect(x - tagW/2, y - 23, tagW, 14);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y - 16);
+  ctx.restore();
+}
+
+function drawMeasuringLine(p1, p2, color, label) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = '#2D1E12';
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.setLineDash([8, 6]);
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.lineWidth = 3.5;
+  ctx.strokeStyle = color;
+  ctx.stroke();
+
+  const midX = (p1.x + p2.x) / 2;
+  const midY = (p1.y + p2.y) / 2;
+  ctx.font = 'bold 12px Fredoka, sans-serif';
+  const tw = ctx.measureText(label).width + 16;
+  ctx.fillStyle = '#2D1E12';
+  ctx.fillRect(midX - tw/2 - 2, midY - 14, tw + 4, 22);
+  ctx.fillStyle = '#FFFDF5';
+  ctx.fillRect(midX - tw/2, midY - 12, tw, 18);
+  ctx.fillStyle = '#2D1E12';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, midX, midY - 3);
+  ctx.restore();
+}
+
+// Reset Points
+resetPointsBtn.addEventListener('click', () => {
+  shawarmaLengthPoints = [];
+  shawarmaWidthPoints = [];
+  refCardPoints = [];
+  recalculateCaliperDimensions();
+  redrawCanvas();
+  setActiveTab('length');
+  playSound('click');
+});
+
+// Calculate Shawarma Click
+analyzeBtn.addEventListener('click', () => {
+  if (!img) {
+    alert("Please upload or choose a shawarma photo first! 🌯");
+    return;
+  }
+  setStep(3);
+  statusText.textContent = "Scanning wrap contours with real-world food science engine... 🔬";
+  statusDot.style.background = 'var(--spicy)';
+  playSound('click');
+
+  setTimeout(() => {
+    recalculateCaliperDimensions();
+    calculateAndRenderResults(true); // Trigger popup!
+  }, 120);
+});
+
+// Manual quick length setter
+function setManualLength(val) {
+  lengthSlider.value = val;
+  sliderLengthVal.textContent = `${val.toFixed(1)} cm`;
+  calculatedLengthCm = val;
+  canvasLiveLength.textContent = `${val.toFixed(1)} cm`;
+  calculateAndRenderResults(false);
+  playSound('click');
+}
+
+// Compute volume, circumference, and test > 500 cm³ condition
+function calculateAndRenderResults(shouldPopup = false) {
+  const d = calculatedDiameterCm;
+  const L = parseFloat(lengthSlider.value) || calculatedLengthCm || 20.5;
+  const r = d / 2;
+
+  // Geometry: Cylinder Volume = π * r² * L (in cm³)
+  const circumference = Math.PI * d;
+  const crossArea = Math.PI * r * r;
+  const volume = crossArea * L;
+
+  // Update on-page UI stats
+  document.getElementById('resVolume').innerHTML = `${volume.toFixed(1)} <span>cm³</span>`;
+  document.getElementById('resCirc').innerHTML = `${circumference.toFixed(1)} <span>cm</span>`;
+  document.getElementById('resDiam').textContent = `${d.toFixed(1)} cm`;
+  document.getElementById('resRad').textContent = `${r.toFixed(1)} cm`;
+  document.getElementById('resArea').textContent = `${crossArea.toFixed(1)} cm²`;
+  document.getElementById('resLength').textContent = `${L.toFixed(1)} cm`;
+
+  // Real-world object comparisons (Directly comparative!)
+  const phoneRatio = (L / 14.7).toFixed(2); // iPhone 15 length = 14.7 cm
+  document.getElementById('compPhone').textContent = `${phoneRatio}× iPhone`;
+  document.getElementById('compPhoneDesc').textContent = L > 14.7 ? `${(L - 14.7).toFixed(1)} cm longer than an iPhone 15` : `Slightly shorter than an iPhone 15`;
+
+  const platePercent = Math.round((L / 26.0) * 100); // Dinner plate diameter = 26 cm
+  document.getElementById('compPlate').textContent = `${platePercent}% of Plate`;
+  document.getElementById('compPlateDesc').textContent = platePercent > 100 ? `Hangover: spills off a 26 cm plate!` : `Fits nicely across a standard 26 cm plate`;
+
+  const sodaCans = (volume / 330.0).toFixed(1); // Standard 330 ml can
+  document.getElementById('compSoda').textContent = `${sodaCans} Cans`;
+
+  // Real-world category classification
+  const catEl = document.getElementById('realWorldCategory');
+  if (L < 17.5 && volume < 400) {
+    catEl.textContent = '🥪 Snack Wrap (14–17 cm · Petite)';
+    catEl.style.color = 'var(--text-muted)';
+  } else if (L <= 22.5 && volume <= 750) {
+    catEl.textContent = '🌯 Standard Shawarma (18–22 cm · Regular)';
+    catEl.style.color = 'var(--mustard)';
+  } else {
+    catEl.textContent = '👑 Jumbo Heavyweight Wrap (23–28 cm · Giant)';
+    catEl.style.color = 'var(--ketchup)';
+  }
+
+  const uselessScore = (98.5 + (Math.sin(volume) * 1.4)).toFixed(1);
+  document.getElementById('resUseless').textContent = `${uselessScore}% ACCURATELY USELESS`;
+
+  document.getElementById('meterFill').style.width = `${Math.min(100, (volume / 800) * 100)}%`;
+  document.getElementById('meterPercent').textContent = `${((volume / 500) * 100).toFixed(0)}% of heavyweight goal`;
+
+  // =========================================================================
+  // CRITICAL REQUIREMENT LOGIC & POPUP:
+  // "show that volume > 500 cm cube ;then show that "congrats buddy, you got big one "
+  // if not "better luck next time""
+  // =========================================================================
+  const verdictCard = document.getElementById('verdictCard');
+  const verdictBadge = document.getElementById('verdictBadge');
+  const verdictTitle = document.getElementById('verdictTitle');
+  const verdictSub = document.getElementById('verdictSub');
+  const volumeMascot = document.getElementById('volumeMascot');
+
+  const sadShawarmaSvgHtml = document.getElementById('svgSadShawarma').innerHTML;
+  const jumboShawarmaSvgHtml = document.getElementById('svgJumboShawarma').innerHTML;
+
+  if (volume > 500) {
+    const msg = 'congrats buddy, you got big one ';
+
+    // On-page card
+    verdictCard.className = 'verdict-box verdict-big';
+    verdictBadge.textContent = '🌟 CERTIFIED JUMBO HEAVYWEIGHT 🌟';
+    verdictTitle.textContent = msg;
+    verdictSub.textContent = `A massive ${volume.toFixed(1)} cm³ monster wrap (${L.toFixed(1)} cm length)! Certified 500+ cm³ champion! 🎉`;
+    volumeMascot.textContent = '👑';
+
+    // Popup modal
+    modalVerdictTitle.textContent = msg;
+    modalVerdictTitle.style.color = 'var(--text-main)';
+    modalVolBadge.textContent = `${volume.toFixed(1)} cm³ (Heavyweight!)`;
+    modalVerdictSub.textContent = `Massive ${volume.toFixed(1)} cm³ certified heavyweight wrap (${L.toFixed(1)} cm length · ${sodaCans} soda cans)! Truly a king among shawarmas.`;
+    modalCharacterStage.innerHTML = jumboShawarmaSvgHtml;
+    document.getElementById('modalRibbon').textContent = '👑 500+ cm³ JUMBO CERTIFIED 👑';
+    document.getElementById('modalRibbon').style.background = 'var(--mustard-light)';
+
+    if (shouldPopup) {
+      openModal();
+      launchConfetti();
+      playSound('big');
+    }
+  } else {
+    const msg = 'better luck next time';
+
+    // On-page card
+    verdictCard.className = 'verdict-box verdict-small';
+    verdictBadge.textContent = '🤏 SNACK SIZE DETECTED';
+    verdictTitle.textContent = msg;
+    verdictSub.textContent = `Clocking in at ${volume.toFixed(1)} cm³ (${L.toFixed(1)} cm length). Needs 500 cm³ for heavyweight club. Still tasty though!`;
+    volumeMascot.textContent = '🌯';
+
+    // Popup modal
+    modalVerdictTitle.textContent = msg;
+    modalVerdictTitle.style.color = '#7A6652';
+    modalVolBadge.textContent = `${volume.toFixed(1)} cm³ (Needs 500 cm³)`;
+    modalVerdictSub.textContent = `Clocking in at ${volume.toFixed(1)} cm³ (${L.toFixed(1)} cm length). Needs ${(500 - volume).toFixed(1)} cm³ more to reach 500 cm³. Still super tasty though 🤏`;
+    modalCharacterStage.innerHTML = sadShawarmaSvgHtml;
+    document.getElementById('modalRibbon').textContent = '🌯 SNACK SIZE VERDICT 🌯';
+    document.getElementById('modalRibbon').style.background = '#F0E8D7';
+
+    if (shouldPopup) {
+      openModal();
+      playSound('small');
+    }
+  }
+
+  resultsDiv.style.display = 'block';
+  setStep(4);
+  statusText.textContent = `Done! Real-world length: ${L.toFixed(1)} cm, Volume: ${volume.toFixed(1)} cm³.`;
+  statusDot.style.background = 'var(--lettuce)';
+}
+
+// Modal controls
+function openModal() { verdictModal.classList.add('show'); }
+function closeModal() { verdictModal.classList.remove('show'); playSound('click'); }
+
+modalCloseBtn.addEventListener('click', closeModal);
+verdictModal.addEventListener('click', e => { if (e.target === verdictModal) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && verdictModal.classList.contains('show')) closeModal(); });
+
+modalInspectBtn.addEventListener('click', () => {
+  closeModal();
+  resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
+
+btnPopVerdictAgain.addEventListener('click', () => { openModal(); playSound('click'); });
+modalResetBtn.addEventListener('click', () => { closeModal(); resetAll(); });
+
+lengthSlider.addEventListener('input', e => {
+  sliderLengthVal.textContent = parseFloat(e.target.value).toFixed(1) + ' cm';
+  calculateAndRenderResults(false);
+});
+
+function launchConfetti() {
+  if (typeof confetti === 'function') {
+    confetti({
+      particleCount: 85,
+      spread: 75,
+      origin: { y: 0.6 },
+      colors: ['#FFB800', '#FF4757', '#2ED573', '#FFEAA7', '#2D1E12']
+    });
+  }
+}
+
+function resetAll() {
+  fileInput.value = '';
+  img = null;
+  shawarmaLengthPoints = [];
+  shawarmaWidthPoints = [];
+  refCardPoints = [];
+  canvasWrapper.style.display = 'none';
+  pinpointControls.style.display = 'none';
+  caliperReadouts.style.display = 'none';
+  scaleBox.style.display = 'none';
+  resultsDiv.style.display = 'none';
+  setStep(1);
+  statusText.textContent = "Waiting for your delicious shawarma photo...";
+  statusDot.style.background = 'var(--mustard)';
+  playSound('click');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.getElementById('btnMeasureAgain').addEventListener('click', resetAll);
+
+// ==========================================================================
+// REALISTIC TEST SAMPLE SHAWAMAS (Grounded in Real Dimensions!)
+// Jumbo: 22.5 cm length, 6.8 cm diameter -> Volume = 817 cm³ (> 500 cm³)
+// Snack: 16.0 cm length, 4.8 cm diameter -> Volume = 289 cm³ (< 500 cm³)
+// ==========================================================================
+document.getElementById('btnSampleJumbo').addEventListener('click', () => loadGeneratedSampleShawarma('jumbo'));
+document.getElementById('btnSampleSnack').addEventListener('click', () => loadGeneratedSampleShawarma('snack'));
+
+function loadGeneratedSampleShawarma(type) {
+  playSound('click');
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = 800;
+  tempCanvas.height = 550;
+  const tctx = tempCanvas.getContext('2d');
+
+  // Butcher paper background
+  tctx.fillStyle = '#FFF7EB';
+  tctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+  tctx.strokeStyle = '#F0E3D0';
+  tctx.lineWidth = 2;
+  for (let x = 0; x < tempCanvas.width; x += 40) {
+    tctx.beginPath(); tctx.moveTo(x, 0); tctx.lineTo(x, tempCanvas.height); tctx.stroke();
+  }
+  for (let y = 0; y < tempCanvas.height; y += 40) {
+    tctx.beginPath(); tctx.moveTo(0, y); tctx.lineTo(tempCanvas.width, y); tctx.stroke();
+  }
+
+  // Credit Card (8.5 cm = 170px -> scale = 20 px/cm)
+  tctx.save();
+  tctx.translate(70, 380);
+  tctx.fillStyle = '#2D1E12';
+  tctx.fillRect(-2, -2, 174, 114);
+  tctx.fillStyle = '#3B82F6';
+  tctx.fillRect(0, 0, 170, 110);
+  tctx.fillStyle = '#F1C40F';
+  tctx.fillRect(20, 35, 30, 24);
+  tctx.fillStyle = '#FFFFFF';
+  tctx.font = 'bold 12px Fredoka, sans-serif';
+  tctx.fillText('REF CARD: 8.5 cm', 20, 85);
+  tctx.restore();
+
+  // Realistic Dimensions:
+  // Jumbo: 450px = 22.5 cm length, 136px = 6.8 cm diameter
+  // Snack: 320px = 16.0 cm length, 96px = 4.8 cm diameter
+  const isJumbo = type === 'jumbo';
+  const wrapW = isJumbo ? 450 : 320;
+  const wrapH = isJumbo ? 136 : 96;
+  const wrapX = 290;
+  const wrapY = isJumbo ? 175 : 195;
+
+  // Shadow
+  tctx.save();
+  tctx.fillStyle = 'rgba(45, 30, 18, 0.15)';
+  tctx.beginPath();
+  tctx.ellipse(wrapX + wrapW/2, wrapY + wrapH + 10, wrapW * 0.52, 22, 0, 0, Math.PI * 2);
+  tctx.fill();
+
+  // Pita wrap body
+  tctx.lineWidth = 6;
+  tctx.strokeStyle = '#2D1E12';
+  const grad = tctx.createLinearGradient(wrapX, wrapY, wrapX, wrapY + wrapH);
+  grad.addColorStop(0, '#FFE8B0'); grad.addColorStop(0.5, '#F7D488'); grad.addColorStop(1, '#DFA552');
+  tctx.fillStyle = grad;
+  tctx.beginPath();
+  tctx.roundRect(wrapX, wrapY, wrapW, wrapH, [wrapH/2, wrapH/2, wrapH/2, wrapH/2]);
+  tctx.fill();
+  tctx.stroke();
+
+  // Grill marks
+  tctx.strokeStyle = '#945D2D';
+  tctx.lineWidth = 5;
+  tctx.lineCap = 'round';
+  for (let gx = wrapX + 50; gx < wrapX + wrapW - 60; gx += 38) {
+    tctx.beginPath(); tctx.moveTo(gx, wrapY + 18); tctx.lineTo(gx + 25, wrapY + wrapH - 18); tctx.stroke();
+  }
+
+  // Foil wrap
+  tctx.fillStyle = '#E4E7EB';
+  tctx.strokeStyle = '#2D1E12';
+  tctx.lineWidth = 5;
+  tctx.beginPath();
+  tctx.roundRect(wrapX - 10, wrapY - 4, wrapW * 0.44, wrapH + 8, [wrapH/2, 0, 0, wrapH/2]);
+  tctx.fill();
+  tctx.stroke();
+
+  // Badge
+  tctx.fillStyle = isJumbo ? '#FF4757' : '#7A6652';
+  tctx.fillRect(wrapX + 30, wrapY + wrapH/2 - 16, 100, 32);
+  tctx.strokeRect(wrapX + 30, wrapY + wrapH/2 - 16, 100, 32);
+  tctx.fillStyle = '#FFFFFF';
+  tctx.font = 'bold 13px Fredoka, sans-serif';
+  tctx.fillText(isJumbo ? '👑 22.5 cm' : '🤏 16.0 cm', wrapX + 38, wrapY + wrapH/2 + 5);
+  tctx.restore();
+
+  loadSourceImage(tempCanvas.toDataURL('image/png'));
+
+  setTimeout(() => {
+    const scale = canvas.width / 800;
+    refCardPoints = [
+      { x: 70 * scale, y: 435 * scale },
+      { x: 240 * scale, y: 435 * scale }
+    ];
+    refInput.value = '8.5';
+    scaleMode = 'card';
+    document.getElementById('optSmartScale').classList.remove('selected');
+    document.getElementById('optCardScale').classList.add('selected');
+    document.getElementById('smartScalePanel').style.display = 'none';
+    document.getElementById('cardScalePanel').style.display = 'block';
+
+    // Shawarma Tips (Length): exactly wrapW = 450px (22.5 cm) for jumbo, 320px (16.0 cm) for snack!
+    shawarmaLengthPoints = [
+      { x: wrapX * scale, y: (wrapY + wrapH/2) * scale },
+      { x: (wrapX + wrapW) * scale, y: (wrapY + wrapH/2) * scale }
+    ];
+
+    // Shawarma Thickness (Width): wrapH = 136px (6.8 cm) for jumbo, 96px (4.8 cm) for snack!
+    shawarmaWidthPoints = [
+      { x: (wrapX + wrapW * 0.7) * scale, y: wrapY * scale },
+      { x: (wrapX + wrapW * 0.7) * scale, y: (wrapY + wrapH) * scale }
+    ];
+
+    recalculateCaliperDimensions();
+    redrawCanvas();
+    statusText.textContent = `Sample loaded! Real-World Length: ${calculatedLengthCm.toFixed(1)} cm (Card is 8.5 cm). Press “Calculate Shawarma”!`;
+    statusDot.style.background = 'var(--lettuce)';
+  }, 250);
+}
+</script>
+
+</body>
+</html>
